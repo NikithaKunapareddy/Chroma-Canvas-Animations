@@ -1,4 +1,5 @@
-# Animation Projects
+
+# Chroma-Canvas-Animations
 
 Welcome to the Animation Projects repository! This collection showcases creative visualizations using Python Turtle graphics and modern web technologies (Three.js, Canvas). Explore a variety of mesmerizing patterns, fractals, fireworks, and interactive web effects.
 
