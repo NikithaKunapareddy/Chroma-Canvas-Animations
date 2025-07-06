@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Colorful Particle Fountain</title>
+  <style>
+    body { margin: 0; background: #111; overflow: hidden; }
+    canvas { display: block; }
+  </style>
+</head>
+<body>
+<canvas id="fountain"></canvas>
+<script>
+const canvas = document.getElementById('fountain');
+const ctx = canvas.getContext('2d');
+let w = window.innerWidth, h = window.innerHeight;
+canvas.width = w;
+canvas.height = h;
+
+function resize() {
+  w = window.innerWidth;
+  h = window.innerHeight;
+  canvas.width = w;
+  canvas.height = h;
+}
+window.addEventListener('resize', resize);
+
+const GRAVITY = 0.11; // less gravity for higher reach
+const PARTICLES = 260; // more particles for fullness
+const FOUNTAIN_X = () => w/2;
+const FOUNTAIN_Y = () => h-60;
+
+function hsvToRgb(h, s, v) {
+  let f = (n, k = (n + h * 6) % 6) => v - v * s * Math.max(Math.min(k,4-k,1),0);
+  return [f(5)*255, f(3)*255, f(1)*255];
+}
+
+class Particle {
+  constructor() {
+    this.reset();
+  }
+  reset() {
+    // Start at center bottom
+    this.x = FOUNTAIN_X();
+    this.y = FOUNTAIN_Y();
+    // Angle: mostly upward, with a slight spread
+    const spread = Math.PI/3; // 60 degrees
+    const angle = -Math.PI/2 + (Math.random()-0.5)*spread;
+    const speed = 13 + Math.random()*5; // much higher speed
+    this.vx = Math.cos(angle) * speed;
+    this.vy = Math.sin(angle) * speed;
+    this.life = 0;
+    this.maxLife = 70 + Math.random()*40;
+    this.hue = Math.random();
+    this.size = 6 + Math.random()*4;
+  }
+  update() {
+    this.x += this.vx;
+    this.y += this.vy;
+    this.vy += GRAVITY;
+    this.life++;
+    if (this.y > h-10 || this.life > this.maxLife) this.reset();
+  }
+  draw(ctx) {
+    const [r,g,b] = hsvToRgb((this.hue + this.life/80)%1, 0.8, 1);
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.size, 0, Math.PI*2);
+    ctx.fillStyle = `rgba(${r|0},${g|0},${b|0},0.85)`;
+    ctx.shadowColor = `rgba(${r|0},${g|0},${b|0},0.7)`;
+    ctx.shadowBlur = 16;
+    ctx.fill();
+    ctx.shadowBlur = 0;
+  }
+}
+
+const particles = Array.from({length: PARTICLES}, () => new Particle());
+
+function animate() {
+  ctx.clearRect(0,0,w,h);
+  // Draw fountain base
+  ctx.save();
+  ctx.beginPath();
+  ctx.ellipse(FOUNTAIN_X(), FOUNTAIN_Y()+18, w*0.18, 18, 0, 0, Math.PI*2);
+  ctx.fillStyle = 'rgba(80,180,255,0.18)';
+  ctx.fill();
+  ctx.restore();
+  // Draw particles
+  for (let p of particles) {
+    p.update();
+    p.draw(ctx);
+  }
+  requestAnimationFrame(animate);
+}
+animate();
+</script>
+</body>
+</html>
